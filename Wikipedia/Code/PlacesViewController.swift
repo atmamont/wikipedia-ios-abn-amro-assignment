@@ -4,6 +4,19 @@ import CocoaLumberjackSwift
 
 import MapKit
 
+@objc
+public final class Place: NSObject {
+    let latitude: Double
+    let longitude: Double
+    let name: String
+
+    @objc public init(latitude: Double, longitude: Double, name: String) {
+        self.latitude = latitude
+        self.longitude = longitude
+        self.name = name
+    }
+}
+
 @objc(WMFPlacesViewController)
 class PlacesViewController: ViewController, UISearchBarDelegate, ArticlePopoverViewControllerDelegate, PlaceSearchSuggestionControllerDelegate, NSFetchedResultsControllerDelegate, UIPopoverPresentationControllerDelegate, ArticlePlaceViewDelegate, UIGestureRecognizerDelegate, HintPresenting {
 
