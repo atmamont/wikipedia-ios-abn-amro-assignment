@@ -61,17 +61,47 @@ __attribute__((annotate("returns_localized_nsstring"))) static inline NSString *
 
 + (instancetype)wmf_placesActivityWithURL:(NSURL *)activityURL {
     NSURLComponents *components = [NSURLComponents componentsWithURL:activityURL resolvingAgainstBaseURL:NO];
-    NSURL *articleURL = nil;
-    for (NSURLQueryItem *item in components.queryItems) {
-        if ([item.name isEqualToString:@"WMFArticleURL"]) {
-            NSString *articleURLString = item.value;
-            articleURL = [NSURL URLWithString:articleURLString];
-            break;
+    
+    NSUserActivity *activity = [self wmf_pageActivityWithName:@"Places"];
+
+    NSDictionary *locationObject = [self placeLocationWithQueryItems:components.queryItems];
+    if (locationObject) {
+        NSDictionary *mutbleUserInfo = [[NSMutableDictionary alloc] initWithDictionary:activity.userInfo];
+        [mutbleUserInfo setValue:locationObject forKey:@"placeLocation"];
+        activity.userInfo = mutbleUserInfo;
+    } else {
+        NSURL *articleURL = nil;
+        for (NSURLQueryItem *item in components.queryItems) {
+            if ([item.name isEqualToString:@"WMFArticleURL"]) {
+                NSString *articleURLString = item.value;
+                articleURL = [NSURL URLWithString:articleURLString];
+                break;
+            }
+        }
+        activity.webpageURL = articleURL;
+    }
+    
+    return activity;
+}
+
++ (NSDictionary *)placeLocationWithQueryItems:(NSArray<NSURLQueryItem *> *)queryItems {
+    NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
+    
+    for (NSURLQueryItem *item in queryItems) {
+        if ([[item.name lowercaseString] isEqualToString:@"name"]) {
+            [dict setValue:item.value forKey:@"name"];
+        } else if ([[item.name lowercaseString] isEqualToString:@"latitude"]) {
+            [dict setValue:item.value forKey:@"latitude"];
+        } else if ([[item.name lowercaseString] isEqualToString:@"longitude"]) {
+            [dict setValue:item.value forKey:@"longitude"];
         }
     }
-    NSUserActivity *activity = [self wmf_pageActivityWithName:@"Places"];
-    activity.webpageURL = articleURL;
-    return activity;
+    
+    if (dict[@"name"] && dict[@"latitude"] && dict[@"longitude"]) {
+        return dict;
+    } else {
+        return nil;
+    }
 }
 
 + (instancetype)wmf_exploreViewActivity {

@@ -1172,11 +1172,23 @@ NSString *const WMFLanguageVariantAlertsLibraryVersion = @"WMFLanguageVariantAle
             [self dismissPresentedViewControllers];
             [self setSelectedIndex:WMFAppTabTypePlaces];
             [self.navigationController popToRootViewControllerAnimated:animated];
+            
             NSURL *articleURL = activity.wmf_linkURL;
-            if (articleURL) {
+            NSDictionary *locationObject = [activity.userInfo valueForKey:@"placeLocation"];
+          
+            [[self placesViewController] updateViewModeToMap];
+
+            if (locationObject) {
+                double latitude = [[locationObject objectForKey:@"latitude"] doubleValue];
+                double longitude = [[locationObject objectForKey:@"longitude"] doubleValue];
+                NSString *name = [[locationObject objectForKey:@"name"] stringValue];
+                
+                Place *place = [[Place alloc] initWithLatitude:latitude longitude:longitude name:name];
+                [[self placesViewController] showPlace:place];
+            } else if (articleURL) {
                 // For "View on a map" action to succeed, view mode has to be set to map.
-                [[self placesViewController] updateViewModeToMap];
                 [[self placesViewController] showArticleURL:articleURL];
+            } else {
             }
         } break;
         case WMFUserActivityTypeContent: {
