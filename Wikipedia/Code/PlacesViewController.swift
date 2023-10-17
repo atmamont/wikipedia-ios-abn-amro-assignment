@@ -2440,3 +2440,23 @@ extension PlacesViewController {
         }
     }
 }
+
+extension PlacesViewController {
+    @objc public func showPlace(_ place: Place) {
+        let coordinate = CLLocationCoordinate2D(latitude: place.latitude, longitude: place.longitude)
+        let region = [coordinate].wmf_boundingRegion(with: 10_000)
+        mapView.setRegion(region, animated: true)
+        
+        let location = CLLocation(latitude: place.latitude, longitude: place.longitude)
+        let searchResult = MWKSearchResult(articleID: 0, revID: 0, title: place.name, displayTitle: place.name, displayTitleHTML: nil, wikidataDescription: nil, extract: nil, thumbnailURL: nil, index: nil, titleNamespace: nil, location: location)
+        let placeSearch = PlaceSearch(filter: .top,
+                                      type: .location,
+                                      origin: .user,
+                                      sortStyle: .links,
+                                      string: place.name,
+                                      region: region,
+                                      localizedDescription: nil,
+                                      searchResult: searchResult)
+        self.currentSearch = placeSearch
+    }
+}
